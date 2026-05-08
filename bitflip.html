@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--link rel="stylesheet"href="bitflip_style.css"-->
+    <script src="https://use.fontawesome.com/3a2eaf6206.js"></script>
+    <title>Disrupt your image!</title>
+</head>
+<body>
+    <h1>BitFlip Emulator</h1>
+    <style type="text/css">
+        body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-direction: column;
+    font-family: 'Chivo',Helvetica,Arial,Lucida,sans-serif;
+    background-color: #304654;
+    color: #ffc8be;
+}
+
+#display_image {
+  display: flex;
+    gap: 20px;
+    padding: 20px 20px;
+    border-radius: 25px;
+    background-color: #ffc8be;
+}
+
+.button {
+    background-color: #91d3ff; /* Green */
+    border: none;
+    color: #91d3ff;
+    padding: 16px 32px;
+    text-align: center;
+    display: inline-block;
+    font-size: 20px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    border-radius: 5px;
+
+}
+
+label input{
+    display: none;
+}
+div label{
+    cursor: pointer;
+    color: #91d3ff;
+}
+i {
+    padding: 5px;
+    color: #91d3ff;
+}
+
+.upload{
+    text-align:center;
+    padding:10px;
+    border-radius: 5px;
+    border:thin solid #91d3ff;
+}
+
+.textarea {
+    width: 100px;
+    height: 20px;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    resize: none;
+}
+
+.button1 {
+    background-color: #304654;
+    color: #91d3ff;
+    border: 5px solid #91d3ff;
+}
+.button1:hover {
+    background-color: #91d3ff;
+    color: #304654;
+}
+
+.thumbnail {
+    height: 400px;
+}
+    </style>
+    <div class="upload">
+    <label for="image_input">Select an image to destroy<br/>
+        <i class="fa fa-2x fa-camera"></i>
+    <input type="file" id="image_input" accept="image/bmp, image/jpg, image/png, image/gif, image/jpeg" >
+    </label>
+    </div>
+    <label for="number_input">Number of flips:</label>
+    <input type="number" id="number_input" class="textarea" value="10">
+    <button type="submit" id="button" class="button button1" onclick="flipImage()">Destroy!</button>
+
+
+    <output id="display_image"></output>
+
+
+
+    <script src="bitflip.js"></script>
+    <script type="text/javascript">
+        const image_input = document.querySelector("#image_input");
+        image_input.addEventListener("change", inputListener)
+    </script>
+    <p>JPG files give the best results. PNG images do not work with Firefox.</p>
+    <p>Created by Matthijs Wisboom</p>
+</body>
+
+</html>
