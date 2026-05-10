@@ -1,5 +1,8 @@
-// const image_input = document.querySelector("#image_input");
-let uploaded_image = null;
+let uploadedImage = null;
+let headerString = null;
+let currentBytes = null;
+let destroyTimer = null;
+let isDestroying = false;
 
 function _base64ToArrayBuffer(base64) {
     let binary_string = window.atob(base64);
@@ -11,13 +14,13 @@ function _base64ToArrayBuffer(base64) {
     return bytes;
 }
 
-function _arrayToBase64( bytes ) {
-    let binary = '';
+function _arrayToBase64(bytes) {
+    let binary = "";
     let len = bytes.byteLength;
     for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode( bytes[ i ] );
+        binary += String.fromCharCode(bytes[i]);
     }
-    return window.btoa( binary );
+    return window.btoa(binary);
 }
 
 function toggleBit(number, bitPosition) {
@@ -25,60 +28,90 @@ function toggleBit(number, bitPosition) {
     return number ^ mask;
 }
 
-function flipImage() {
+function updateDisplayedImage() {
+    if (!currentBytes || !headerString) return;
+    const toBase = _arrayToBase64(currentBytes);
+    const finalImage = headerString.concat(",", toBase);
+
+    const img = document.querySelector("#display_image img.thumbnail");
+    if (img) {
+        img.src = finalImage;
+        return;
+    }
+
     const output = document.querySelector("#display_image");
-    const flips = Number(document.querySelector("#number_input").value);
-
-    const image_split = uploaded_image.result.split(",");
-    let header = image_split[0];
-    let data = image_split[1];
-    let data_bytes = _base64ToArrayBuffer(data)
-    for (let i = 0; i < flips; i++) {
-        const loc = Math.floor(Math.random() * data_bytes.length);
-        const base_byte = data_bytes[loc];
-        const new_byte = toggleBit(base_byte, Math.floor(Math.random() * 8));
-        data_bytes[loc] = new_byte;
-    }
-
-    const toBase = _arrayToBase64(data_bytes);
-    const finalImage = header.concat(",",toBase)
-
-    // console.log(header);
-    // console.log(data)
-
     const div = document.createElement("div");
-    div.innerHTML = `<img class="thumbnail" src="${finalImage}" title="${uploaded_image.name}"/>`;
-    if (output.children.length > 1) {
-        output.removeChild(output.lastChild);
-    }
-
+    div.innerHTML = `<img class="thumbnail" src="${finalImage}" title="${uploadedImage ? uploadedImage.name : ""}"/>`;
+    output.innerHTML = "";
     output.appendChild(div);
 }
 
+function flipSingle() {
+    if (!currentBytes) return;
+    const loc = Math.floor(Math.random() * currentBytes.length);
+    const base_byte = currentBytes[loc];
+    const new_byte = toggleBit(base_byte, Math.floor(Math.random() * 8));
+    currentBytes[loc] = new_byte;
+    updateDisplayedImage();
+}
+
+function toggleDestroy() {
+    if (isDestroying) stopDestroy();
+    else startDestroy();
+}
+
+function startDestroy() {
+    const intervalSec =
+        Number(document.querySelector("#interval_input").value) || 1;
+    const intervalMs = Math.max(100, Math.floor(intervalSec * 1000));
+    if (!currentBytes && uploadedImage && uploadedImage.result) {
+        const image_split = uploadedImage.result.split(",");
+        headerString = image_split[0];
+        currentBytes = _base64ToArrayBuffer(image_split[1]);
+    }
+    if (!currentBytes) return;
+    if (destroyTimer) clearInterval(destroyTimer);
+    destroyTimer = setInterval(flipSingle, intervalMs);
+    isDestroying = true;
+    const btn = document.querySelector("#destroy_toggle");
+    if (btn) btn.textContent = "Stop destroying";
+}
+
+function stopDestroy() {
+    if (destroyTimer) clearInterval(destroyTimer);
+    destroyTimer = null;
+    isDestroying = false;
+    const btn = document.querySelector("#destroy_toggle");
+    if (btn) btn.textContent = "Start destroying";
+}
+
 function inputListener(e) {
-    if(window.File && window.FileReader && window.FileList && window.Blob) {
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
         const file = e.target.files;
         const output = document.querySelector("#display_image");
 
         if (!file[0].type.match("image")) return;
 
         const picReader = new FileReader();
-        picReader.addEventListener("load", function(event) {
+        picReader.addEventListener("load", function (event) {
             const picFile = event.target;
-            uploaded_image = picFile;
+            uploadedImage = picFile;
+            // initialize current bytes and header for incremental flipping
+            const image_split = picFile.result.split(",");
+            headerString = image_split[0];
+            currentBytes = _base64ToArrayBuffer(image_split[1]);
+
+            // stop any ongoing destroy timer
+            stopDestroy();
+
             const div = document.createElement("div");
             div.innerHTML = `<img class="thumbnail" src="${picFile.result}" title="${picFile.name}"/>`;
 
-            output.innerHTML = '';
+            output.innerHTML = "";
             output.appendChild(div);
-
-        })
+        });
         picReader.readAsDataURL(file[0]);
-
     } else {
-        alert("Your browser does not support the file API")
+        alert("Your browser does not support the file API");
     }
 }
-
-// image_input.addEventListener("change", inputListener)
-
