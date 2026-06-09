@@ -3,7 +3,6 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <!--link rel="stylesheet"href="bitflip_style.css"-->
         <script src="https://use.fontawesome.com/3a2eaf6206.js"></script>
         <title>Disrupt your image!</title>
     </head>
@@ -30,7 +29,7 @@
             }
 
             .button {
-                background-color: #91d3ff; /* Green */
+                background-color: #91d3ff;
                 border: none;
                 color: #91d3ff;
                 padding: 16px 32px;
@@ -55,17 +54,17 @@
                 color: #91d3ff;
             }
 
-            .upload {
-                text-align: center;
-                padding: 10px;
-                border-radius: 5px;
-                border: thin solid #91d3ff;
+
+            .input-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }
 
             .textarea {
                 width: 100px;
-                height: 20px;
-                padding: 12px 20px;
+                height: 40px;
+                padding: 6px 12px;
                 box-sizing: border-box;
                 border: 2px solid #ccc;
                 border-radius: 4px;
@@ -86,10 +85,64 @@
             .thumbnail {
                 height: 400px;
             }
+
+            #counter_display {
+                font-size: 1.2rem;
+                font-weight: bold;
+                color: #91d3ff;
+                margin: 5px 0;
+            }
+
+            .shake-container {
+                display: inline-block;
+            }
+
+            .shake {
+                animation: shakeEffect 0.1s ease-in-out;
+            }
+
+            @keyframes shakeEffect {
+                0% {
+                    transform: translate(0, 0);
+                }
+                25% {
+                    transform: translate(-4px, 2px);
+                }
+                50% {
+                    transform: translate(4px, -2px);
+                }
+                75% {
+                    transform: translate(-2px, -2px);
+                }
+                100% {
+                    transform: translate(0, 0);
+                }
+            }
+
+            p {
+                text-align: center;
+            }
+
+            .upload {
+                text-align: center;
+                border-radius: 5px;
+                border: thin solid #91d3ff;
+                padding: 0;
+                display: flex;
+            }
+
+            .upload label {
+                cursor: pointer;
+                color: #91d3ff;
+                width: 100%;
+                padding: 10px;
+                box-sizing: border-box;
+            }
         </style>
+
         <div class="upload">
-            <label for="image_input"
-                >Select an image to destroy<br />
+            <label for="image_input">
+                Select an image to destroy<br />
                 <i class="fa fa-2x fa-camera"></i>
                 <input
                     type="file"
@@ -98,15 +151,19 @@
                 />
             </label>
         </div>
-        <label for="interval_input">Interval (s):</label>
-        <input
-            type="number"
-            id="interval_input"
-            class="textarea"
-            value="0.5"
-            min="0.1"
-            step="0.1"
-        />
+
+        <div class="input-row">
+            <label for="interval_input">Interval (s):</label>
+            <input
+                type="number"
+                id="interval_input"
+                class="textarea"
+                value="1"
+                min="0.1"
+                step="0.1"
+            />
+        </div>
+
         <button
             type="button"
             id="destroy_toggle"
@@ -115,6 +172,8 @@
         >
             Start destroying
         </button>
+
+        <div id="counter_display">Bitflips: <span id="flip_count">0</span></div>
 
         <output id="display_image"></output>
 
@@ -127,7 +186,6 @@
             JPG files give the best results. PNG images do not work with
             Firefox.
         </p>
-        <p>Created by Matthijs Wisboom</p>
-        <p>Edited by Stijn Risseeuw</p>
+        <p>Created by Matthijs Wisboom<br />Edited by Stijn Risseeuw</p>
     </body>
 </html>

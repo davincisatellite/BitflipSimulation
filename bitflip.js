@@ -3,6 +3,10 @@ let headerString = null;
 let currentBytes = null;
 let destroyTimer = null;
 let isDestroying = false;
+let flipCount = 0; // Added counter state
+
+// Bytes to skip at the start of the array to protect core image metadata headers
+const HEADER_OFFSET = 1000;
 
 function _base64ToArrayBuffer(base64) {
     let binary_string = window.atob(base64);
@@ -36,22 +40,60 @@ function updateDisplayedImage() {
     const img = document.querySelector("#display_image img.thumbnail");
     if (img) {
         img.src = finalImage;
+        triggerShake(); // Trigger the visual shake indicator
         return;
     }
 
     const output = document.querySelector("#display_image");
     const div = document.createElement("div");
+    div.className = "shake-container"; // Wrapper class for tracking animations
     div.innerHTML = `<img class="thumbnail" src="${finalImage}" title="${uploadedImage ? uploadedImage.name : ""}"/>`;
     output.innerHTML = "";
     output.appendChild(div);
+    triggerShake();
+}
+
+function updateCounterDisplay() {
+    const countEl = document.querySelector("#flip_count");
+    if (countEl) {
+        countEl.textContent = flipCount;
+    }
+}
+
+function triggerShake() {
+    const container = document.querySelector(".shake-container");
+    if (container) {
+        // Force reflow/reset if animation is already running
+        container.classList.remove("shake");
+        void container.offsetWidth;
+        container.classList.add("shake");
+    }
 }
 
 function flipSingle() {
     if (!currentBytes) return;
-    const loc = Math.floor(Math.random() * currentBytes.length);
+
+    // Ensure the file is large enough to safely skip the header data
+    if (currentBytes.length <= HEADER_OFFSET) {
+        console.warn(
+            "Image file is too small to split safely without altering headers.",
+        );
+        return;
+    }
+
+    // Pick a random location *after* the header offset constraint
+    const loc =
+        Math.floor(Math.random() * (currentBytes.length - HEADER_OFFSET)) +
+        HEADER_OFFSET;
+
     const base_byte = currentBytes[loc];
     const new_byte = toggleBit(base_byte, Math.floor(Math.random() * 8));
     currentBytes[loc] = new_byte;
+
+    // Increment and update counter
+    flipCount++;
+    updateCounterDisplay();
+
     updateDisplayedImage();
 }
 
@@ -96,15 +138,19 @@ function inputListener(e) {
         picReader.addEventListener("load", function (event) {
             const picFile = event.target;
             uploadedImage = picFile;
-            // initialize current bytes and header for incremental flipping
+
+            // Reset counter when a clean image is loaded
+            flipCount = 0;
+            updateCounterDisplay();
+
             const image_split = picFile.result.split(",");
             headerString = image_split[0];
             currentBytes = _base64ToArrayBuffer(image_split[1]);
 
-            // stop any ongoing destroy timer
             stopDestroy();
 
             const div = document.createElement("div");
+            div.className = "shake-container";
             div.innerHTML = `<img class="thumbnail" src="${picFile.result}" title="${picFile.name}"/>`;
 
             output.innerHTML = "";
